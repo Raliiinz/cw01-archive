@@ -7,14 +7,12 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from uuid6 import uuid7
 
-
 def validate_task(name: str, url: str) -> None:
     """Проверяет корректность задания на архивирование."""
 
     if not isinstance(name, str) or not name:
         raise ValueError("Название файла не должно быть пустым")
 
-    # Запрещаем пути вместо обычного имени файла.
     if name in (".", "..") or "/" in name or "\\" in name:
         raise ValueError("Недопустимое название файла")
 
@@ -23,10 +21,8 @@ def validate_task(name: str, url: str) -> None:
 
     parsed_url = urlparse(url)
 
-    # Поддерживаем только HTTP и HTTPS.
     if parsed_url.scheme not in ("http", "https") or not parsed_url.hostname:
         raise ValueError("Некорректный URL файла")
-
 
 def create_archive(name: str, url: str, output_dir: Path) -> tuple[str, Path]:
     """Скачивает файл по URL и сохраняет его в ZIP-архив.
@@ -39,7 +35,6 @@ def create_archive(name: str, url: str, output_dir: Path) -> tuple[str, Path]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Для каждого архива создаём уникальный UUID версии 7.
     key = f"{uuid7()}.zip"
     archive_path = output_dir / key
 

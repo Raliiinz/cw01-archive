@@ -7,7 +7,6 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-
 TABLE_NAME = "archives"
 
 # YDB Document API может быть недоступен сразу после создания базы.
@@ -19,7 +18,6 @@ RETRYABLE_ERRORS = {
     "ServiceUnavailable",
     "ServiceUnavailableException",
 }
-
 
 def create_table(client):
     """Создаёт таблицу после готовности YDB Document API."""
@@ -48,11 +46,9 @@ def create_table(client):
                 print("Document table already exists")
                 break
 
-            # Ошибки доступа и конфигурации не скрываем.
             if code not in RETRYABLE_ERRORS:
                 raise
 
-            # После последней попытки возвращаем настоящую ошибку.
             if attempt == MAX_CREATE_ATTEMPTS:
                 raise
 
@@ -63,15 +59,12 @@ def create_table(client):
             )
             time.sleep(RETRY_DELAY_SECONDS)
 
-    # Ожидаем появления таблицы и при первом создании,
-    # и при повторном запуске после частичной ошибки.
     client.get_waiter("table_exists").wait(
         TableName=TABLE_NAME,
         WaiterConfig={"Delay": 3, "MaxAttempts": 50},
     )
 
     print("Document table archives is ready")
-
 
 def delete_table(client):
     """Удаляет документную таблицу, если она существует."""
@@ -94,7 +87,6 @@ def delete_table(client):
 
     print("Document table archives deleted")
 
-
 def main():
     """Создаёт или удаляет документную таблицу YDB."""
 
@@ -103,7 +95,6 @@ def main():
 
     action = sys.argv[1]
 
-    # Endpoint и ключи предоставляет Terraform через окружение.
     client = boto3.client(
         "dynamodb",
         endpoint_url=os.environ["YDB_DOCUMENT_ENDPOINT"],
@@ -120,7 +111,6 @@ def main():
         create_table(client)
     else:
         delete_table(client)
-
 
 if __name__ == "__main__":
     main()

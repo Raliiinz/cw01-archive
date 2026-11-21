@@ -1,5 +1,4 @@
 
-# Package the Python function without local caches or virtual environments.
 data "archive_file" "function_source" {
   type        = "zip"
   output_path = "${path.module}/function.zip"
@@ -30,7 +29,6 @@ data "archive_file" "function_source" {
   }
 }
 
-# Cloud Function that processes archiving tasks from YMQ.
 resource "yandex_function" "archiver" {
   folder_id   = var.folder_id
   name        = "${local.resource_prefix}archive-function"
@@ -43,10 +41,8 @@ resource "yandex_function" "archiver" {
 
   service_account_id = yandex_iam_service_account.worker.id
 
-  # Redeploy automatically when the function source changes.
   user_hash = data.archive_file.function_source.output_base64sha256
 
-  # Configuration is created from Terraform-managed resources.
   environment = {
     BUCKET_NAME           = yandex_storage_bucket.archives.bucket
     YDB_DOCUMENT_ENDPOINT = yandex_ydb_database_serverless.archives.document_api_endpoint
@@ -55,7 +51,6 @@ resource "yandex_function" "archiver" {
     AWS_SECRET_ACCESS_KEY = yandex_iam_service_account_static_access_key.worker.secret_key
   }
 
-  # Upload the generated ZIP archive.
   content {
     zip_filename = data.archive_file.function_source.output_path
   }

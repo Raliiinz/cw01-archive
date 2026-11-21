@@ -1,8 +1,6 @@
 
-# IAM roles required by the system's service accounts.
 locals {
   service_account_roles = {
-    # API Gateway: send tasks, read metadata and download ZIP files.
     gateway_ymq = {
       account_id = yandex_iam_service_account.gateway.id
       role       = "ymq.writer"
@@ -18,7 +16,6 @@ locals {
       role       = "storage.viewer"
     }
 
-    # Archive function: upload ZIP files and save metadata.
     worker_storage = {
       account_id = yandex_iam_service_account.worker.id
       role       = "storage.uploader"
@@ -29,7 +26,6 @@ locals {
       role       = "ydb.editor"
     }
 
-    # Trigger: read queue messages and invoke the function.
     trigger_ymq = {
       account_id = yandex_iam_service_account.trigger.id
       role       = "ymq.reader"
@@ -40,7 +36,6 @@ locals {
       role       = "functions.functionInvoker"
     }
 
-    # Provisioner: manage resources through Terraform.
     provisioner_ymq = {
       account_id = yandex_iam_service_account.provisioner.id
       role       = "ymq.admin"
@@ -58,7 +53,6 @@ locals {
   }
 }
 
-# Assign each IAM role within the target folder.
 resource "yandex_resourcemanager_folder_iam_member" "service_roles" {
   for_each = local.service_account_roles
 

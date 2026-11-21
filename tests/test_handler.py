@@ -6,13 +6,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import ANY, patch
 
-
 sys.path.insert(
     0, str(Path(__file__).resolve().parents[1] / "function")
 )
 
 from handler import handler
-
 
 class TestHandler(unittest.TestCase):
 
@@ -116,9 +114,7 @@ class TestHandler(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             handler(self.event, None)
 
-        # Если ZIP не загрузился, в YDB ничего не записываем.
         mock_save.assert_not_called()
-
 
 if __name__ == "__main__":
     unittest.main()

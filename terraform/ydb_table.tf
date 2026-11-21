@@ -1,5 +1,4 @@
 
-# Manage the YDB document table within the Terraform lifecycle.
 resource "terraform_data" "archives_table" {
 
   # Store credentials as sensitive values.
@@ -14,12 +13,10 @@ resource "terraform_data" "archives_table" {
     sensitive = true
   }
 
-  # Recreate the table when the YDB database is replaced.
   triggers_replace = [
     yandex_ydb_database_serverless.archives.id
   ]
 
-  # Create the document table after YDB and credentials exist.
   provisioner "local-exec" {
     working_dir = "${path.module}/.."
     command     = "python scripts/ydb_table.py create"
@@ -31,7 +28,6 @@ resource "terraform_data" "archives_table" {
     }
   }
 
-  # Delete the document table during terraform destroy.
   provisioner "local-exec" {
     when        = destroy
     working_dir = "${path.module}/.."

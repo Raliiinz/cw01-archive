@@ -3,9 +3,7 @@ from pathlib import Path
 
 import boto3
 
-
 S3_ENDPOINT = "https://storage.yandexcloud.net"
-
 
 def upload_archive(
     archive_path: Path,
@@ -30,7 +28,6 @@ def upload_archive(
             region_name="ru-central1",
         )
 
-    # Загружаем ZIP с его уникальным ключом.
     s3_client.upload_file(
         str(archive_path),
         bucket_name,
