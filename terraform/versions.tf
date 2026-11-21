@@ -7,5 +7,10 @@ terraform {
       source  = "yandex-cloud/yandex"
       version = "= 0.243.0"
     }
+
+    archive = {
+      source  = "hashicorp/archive"
+      version = "= 2.7.1"
+    }
   }
 }
