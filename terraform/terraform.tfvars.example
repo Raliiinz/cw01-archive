@@ -1,0 +1,3 @@
+cloud_id    = "<your-cloud-id>"
+folder_id   = "<your-folder-id>"
+bucket_name = "vvot00-cw01-archives-unique1234"
