@@ -72,6 +72,37 @@ class TestOpenAPI(unittest.TestCase):
             },
         )
 
+    def test_filename_validation(self):
+        """Проверяем допустимые и недопустимые имена файлов."""
+
+        pattern = self.spec["components"]["schemas"]["Task"][
+            "properties"
+        ]["name"]["pattern"]
+
+        valid_names = [
+            "document.pdf",
+            "file.txt",
+            ".env",
+            "..example",
+        ]
+
+        invalid_names = [
+            ".",
+            "..",
+            "../secret.txt",
+            "folder/file.txt",
+            "folder\\file.txt",
+            "",
+        ]
+
+        for name in valid_names:
+            with self.subTest(name=name):
+                self.assertIsNotNone(re.fullmatch(pattern, name))
+
+        for name in invalid_names:
+            with self.subTest(name=name):
+                self.assertIsNone(re.fullmatch(pattern, name))
+
 
 if __name__ == "__main__":
     unittest.main()
