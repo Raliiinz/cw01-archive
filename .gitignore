@@ -1,0 +1,27 @@
+
+# Python virtual environment and cache
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Terraform local files and sensitive state
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+*.tfplan
+crash.log
+
+# Generated archives
+*.zip
+
+# Editor and operating system files
+.vscode/
+.DS_Store
