@@ -1,0 +1,165 @@
+
+openapi: "3.0.0"
+
+info:
+  title: Archiving System API
+  description: API for asynchronous file archiving in Yandex Cloud
+  version: "1.0.0"
+
+paths:
+  /tasks:
+    post:
+      summary: Create an archiving task
+      operationId: createTask
+
+      # Gateway validates JSON before sending it to YMQ.
+      x-yc-apigateway-validator:
+        validateRequestBody: true
+
+      x-yc-apigateway-integration:
+        type: cloud_ymq
+        action: SendMessage
+        queue_url: "${queue_url}"
+        folder_id: "${folder_id}"
+        service_account_id: "${service_account_id}"
+        payload_format_type: body
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+
+      responses:
+        "200":
+          description: Internal YMQ success response, mapped to 202
+          x-yc-status-mapping: 202
+        "202":
+          description: Task accepted for asynchronous processing
+        "400":
+          description: Invalid task
+
+  /archives:
+    get:
+      summary: List archives
+      operationId: listArchives
+
+      x-yc-apigateway-integration:
+        type: cloud_ydb
+        action: Scan
+        database: "${database_path}"
+        table_name: archives
+        service_account_id: "${service_account_id}"
+
+      responses:
+        "200":
+          description: List of archives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Archive"
+
+  /archives/{key}:
+    get:
+      summary: Get archive information
+      operationId: getArchive
+
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: ZIP archive key
+          schema:
+            type: string
+
+      x-yc-apigateway-integration:
+        type: cloud_ydb
+        action: GetItem
+        database: "${database_path}"
+        table_name: archives
+        key: '{"key": "{key}"}'
+        service_account_id: "${service_account_id}"
+
+      responses:
+        "200":
+          description: Archive information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Archive"
+        "404":
+          description: Archive not found
+
+  /download/{key}:
+    get:
+      summary: Download ZIP archive
+      operationId: downloadArchive
+
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: ZIP archive key
+          schema:
+            type: string
+
+      x-yc-apigateway-integration:
+        type: object_storage
+        bucket: "${bucket_name}"
+        object: "{key}"
+        service_account_id: "${service_account_id}"
+
+      responses:
+        "200":
+          description: ZIP archive
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Archive not found
+
+components:
+  schemas:
+    Task:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - url
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: '^[^/\\]+$'
+          description: Original filename
+          example: document.pdf
+        url:
+          type: string
+          format: uri
+          pattern: '^https?://[^/\s?#]+'
+          description: HTTP or HTTPS URL of the source file
+          example: https://example.com/document.pdf
+
+    Archive:
+      type: object
+      required:
+        - name
+        - url
+        - key
+      properties:
+        name:
+          type: string
+          example: document.pdf
+        url:
+          type: string
+          format: uri
+          example: https://example.com/document.pdf
+        key:
+          type: string
+          example: 019ab123-4567-7abc-8def-123456789abc.zip

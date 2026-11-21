@@ -1,0 +1,4 @@
+
+-r function/requirements.txt
+PyYAML==6.0.3
+openapi-spec-validator==0.7.2
